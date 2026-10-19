@@ -1,0 +1,28 @@
+services:
+  db:
+    image: postgres:18-bookworm
+    environment:
+      POSTGRES_DB: pharmaflow
+      POSTGRES_USER: pharmaflow
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Run npm run setup first}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - pharmaflow_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pharmaflow -d pharmaflow"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+  api:
+    build: .
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://pharmaflow:${DB_PASSWORD}@db:5432/pharmaflow
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+volumes:
+  pharmaflow_data:

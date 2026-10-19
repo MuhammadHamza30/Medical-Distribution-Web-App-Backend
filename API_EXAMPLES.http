@@ -1,0 +1,37 @@
+# Use the private email/password printed by npm run setup.
+# Your REST client must preserve the Set-Cookie response between requests.
+@base = http://localhost:3000/api
+@origin = http://localhost:5173
+
+GET {{base}}/health
+
+### Login
+POST {{base}}/auth/login
+Origin: {{origin}}
+Content-Type: application/json
+
+{"email":"admin@pharmaflow.local","password":"REPLACE_WITH_YOUR_LOCAL_PASSWORD"}
+
+### Administrator snapshot
+GET {{base}}/bootstrap
+
+### Create a credit order against seeded records
+POST {{base}}/orders
+Origin: {{origin}}
+Content-Type: application/json
+Idempotency-Key: example-order-000001
+
+{"shopId":"s4","lines":[{"productId":"p1","qty":10,"bonus":0,"rate":180,"discount":0}]}
+
+### Approve the returned order id
+POST {{base}}/orders/REPLACE_ORDER_ID/approve
+Origin: {{origin}}
+Idempotency-Key: example-approve-000001
+
+### Confirm full delivery
+POST {{base}}/orders/REPLACE_ORDER_ID/deliver
+Origin: {{origin}}
+Idempotency-Key: example-delivery-000001
+
+### Reconciliation
+GET {{base}}/reports/reconciliation
